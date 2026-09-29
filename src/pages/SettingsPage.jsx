@@ -1,0 +1,249 @@
+import React, { useState, useEffect } from 'react';
+import { getSettingsApi, updateSettingsApi } from '../services/settingsService';
+import { Building, Mail, MessageSquare, Save, ShieldCheck } from 'lucide-react';
+
+const SettingsPage = () => {
+  const [settings, setSettings] = useState({
+    companyName: 'Kevalon Technology',
+    website: 'www.kevalontechnology.in',
+    email: 'sales@kevalontechnology.in',
+    phone: '+91 90810 12218',
+    senderName: 'Harsh Kothari',
+    designation: 'CEO & Founder',
+    smtpHost: '',
+    smtpPort: 587,
+    smtpUsername: '',
+    smtpPassword: '',
+    smtpFromName: 'Harsh Kothari | Kevalon Technology',
+    smtpFromEmail: 'sales@kevalontechnology.in',
+    whatsappAccessToken: '',
+    whatsappPhoneNumberId: '',
+    whatsappBusinessAccountId: '',
+    whatsappApiVersion: 'v18.0'
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const fetchSettingsData = async () => {
+      try {
+        const res = await getSettingsApi();
+        if (res.success && res.settings) {
+          setSettings((prev) => ({ ...prev, ...res.settings }));
+        }
+      } catch (err) {
+        console.error('Failed to load settings:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSettingsData();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      await updateSettingsApi(settings);
+      alert('Settings saved successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="py-12 text-center text-xs text-slate-400">Loading Settings...</div>;
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in max-w-4xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">System & Channel Configuration</h1>
+          <p className="text-xs text-slate-500">
+            Configure Kevalon Technology sender details, Nodemailer SMTP, and WhatsApp Business Cloud API settings.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex items-center gap-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md transition-all disabled:opacity-50"
+        >
+          <Save className="w-4 h-4" />
+          {saving ? 'Saving...' : 'Save Settings'}
+        </button>
+      </div>
+
+      {/* Company Settings */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
+        <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Building className="w-4 h-4 text-brand-600" />
+          Company & Sender Profile (Kevalon Technology)
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-semibold text-slate-700">Company Name</label>
+            <input
+              type="text"
+              value={settings.companyName}
+              onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Website</label>
+            <input
+              type="text"
+              value={settings.website}
+              onChange={(e) => setSettings({ ...settings, website: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Official Contact Email</label>
+            <input
+              type="email"
+              value={settings.email}
+              onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Official Phone Number</label>
+            <input
+              type="text"
+              value={settings.phone}
+              onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Primary Sender Name</label>
+            <input
+              type="text"
+              value={settings.senderName}
+              onChange={(e) => setSettings({ ...settings, senderName: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Designation</label>
+            <input
+              type="text"
+              value={settings.designation}
+              onChange={(e) => setSettings({ ...settings, designation: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Email Settings */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
+        <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Mail className="w-4 h-4 text-blue-600" />
+          Email Nodemailer SMTP Credentials
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="font-semibold text-slate-700">SMTP Host</label>
+            <input
+              type="text"
+              placeholder="smtp.gmail.com"
+              value={settings.smtpHost}
+              onChange={(e) => setSettings({ ...settings, smtpHost: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">SMTP Port</label>
+            <input
+              type="number"
+              value={settings.smtpPort}
+              onChange={(e) => setSettings({ ...settings, smtpPort: parseInt(e.target.value, 10) })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">SMTP Username / Email</label>
+            <input
+              type="text"
+              placeholder="sales@kevalontechnology.in"
+              value={settings.smtpUsername}
+              onChange={(e) => setSettings({ ...settings, smtpUsername: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">SMTP App Password</label>
+            <input
+              type="password"
+              placeholder="••••••••••••"
+              value={settings.smtpPassword}
+              onChange={(e) => setSettings({ ...settings, smtpPassword: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* WhatsApp Cloud API Settings */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
+        <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3">
+          <MessageSquare className="w-4 h-4 text-emerald-600" />
+          WhatsApp Business Cloud API Settings
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="font-semibold text-slate-700">WhatsApp Access Token</label>
+            <textarea
+              rows="2"
+              placeholder="EAAG..."
+              value={settings.whatsappAccessToken}
+              onChange={(e) => setSettings({ ...settings, whatsappAccessToken: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            ></textarea>
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Phone Number ID</label>
+            <input
+              type="text"
+              placeholder="10065..."
+              value={settings.whatsappPhoneNumberId}
+              onChange={(e) => setSettings({ ...settings, whatsappPhoneNumberId: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Business Account ID</label>
+            <input
+              type="text"
+              placeholder="1029..."
+              value={settings.whatsappBusinessAccountId}
+              onChange={(e) => setSettings({ ...settings, whatsappBusinessAccountId: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+        </div>
+      </div>
+    </form>
+  );
+};
+
+export default SettingsPage;
