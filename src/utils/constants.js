@@ -1,4 +1,8 @@
-export const API_BASE_URL = 'http://localhost:5000/api';
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000/api'
+    : 'https://lead-b-0dlr.onrender.com/api');
 
 export const LEAD_STATUSES = {
   NEW: { label: 'New', color: 'bg-slate-100 text-slate-700 border-slate-200' },
