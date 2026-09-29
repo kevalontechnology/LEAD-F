@@ -6,8 +6,8 @@ import FollowUpModal from '../components/followups/FollowUpModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import Pagination from '../components/common/Pagination';
 import { getLeadsApi, bulkDeleteLeadsApi, regenerateLeadMessageApi } from '../services/leadService';
-import { sendWhatsAppApi, sendEmailApi, bulkSendMessagesApi } from '../services/outreachService';
-import { Search, Filter, MessageSquare, Mail, Send, Trash2, Plus, Upload } from 'lucide-react';
+import { bulkSendMessagesApi } from '../services/outreachService';
+import { Search, MessageSquare, Mail, Send, Trash2, Upload, Filter } from 'lucide-react';
 
 const quickFilterTabs = [
   { id: 'ALL', label: 'All Leads' },
@@ -22,7 +22,7 @@ const quickFilterTabs = [
 ];
 
 const LeadsPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   const [leads, setLeads] = useState([]);
@@ -111,14 +111,14 @@ const LeadsPage = () => {
     setIsDetailsOpen(true);
   };
 
-  const handleSendSingleWhatsApp = async (lead, customMsg) => {
+  const handleSendSingleWhatsApp = async (lead) => {
     setActiveLead(lead);
     setSelectedLeadIds([lead._id]);
     setSendChannel('WHATSAPP');
     setIsConfirmOpen(true);
   };
 
-  const handleSendSingleEmail = async (lead, customSubject, customBody) => {
+  const handleSendSingleEmail = async (lead) => {
     setActiveLead(lead);
     setSelectedLeadIds([lead._id]);
     setSendChannel('EMAIL');
@@ -177,20 +177,20 @@ const LeadsPage = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in relative pb-16">
       {/* Top Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Leads & Outreach Management</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Leads CRM</h1>
           <p className="text-xs text-slate-500">
-            Review generated category messages, manually select leads, and confirm sending.
+            Review generated category messages, select leads, and send WhatsApp & Emails.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate('/import-leads')}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
           >
             <Upload className="w-4 h-4" />
             Import Excel
@@ -219,9 +219,9 @@ const LeadsPage = () => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4 text-xs">
-        <div className="flex flex-wrap items-center gap-3 flex-1">
-          <div className="relative w-64">
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
+          <div className="relative flex-1 sm:max-w-xs">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
             <input
               type="text"
@@ -235,51 +235,56 @@ const LeadsPage = () => {
             />
           </div>
 
-          <select
-            value={selectedCategory}
-            onChange={(e) => {
-              setSelectedCategory(e.target.value);
-              setPage(1);
-            }}
-            className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-medium text-slate-700"
-          >
-            <option value="">All Categories</option>
-            {categories.map((c, i) => (
-              <option key={i} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
+            <select
+              value={selectedCategory}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setPage(1);
+              }}
+              className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-medium text-slate-700 w-full sm:w-auto"
+            >
+              <option value="">All Categories</option>
+              {categories.map((c, i) => (
+                <option key={i} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
 
-          <select
-            value={selectedCity}
-            onChange={(e) => {
-              setSelectedCity(e.target.value);
-              setPage(1);
-            }}
-            className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-medium text-slate-700"
-          >
-            <option value="">All Cities</option>
-            {cities.map((c, i) => (
-              <option key={i} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+            <select
+              value={selectedCity}
+              onChange={(e) => {
+                setSelectedCity(e.target.value);
+                setPage(1);
+              }}
+              className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-medium text-slate-700 w-full sm:w-auto"
+            >
+              <option value="">All Cities</option>
+              {cities.map((c, i) => (
+                <option key={i} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+      </div>
 
-        {/* Selected Leads Bulk Toolbar */}
-        {selectedLeadIds.length > 0 && (
-          <div className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl shadow-md animate-fade-in">
-            <span className="font-bold text-xs text-brand-300 mr-2">
-              Selected ({selectedLeadIds.length})
-            </span>
+      {/* Selected Leads Floating/Inline Bulk Toolbar */}
+      {selectedLeadIds.length > 0 && (
+        <div className="sticky top-20 z-20 flex flex-wrap items-center justify-between gap-3 bg-slate-900 text-white p-3.5 rounded-xl shadow-xl border border-slate-700 animate-slide-up">
+          <span className="font-bold text-xs text-brand-300">
+            Selected Leads ({selectedLeadIds.length})
+          </span>
+
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => {
                 setSendChannel('WHATSAPP');
                 setIsConfirmOpen(true);
               }}
-              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1 text-[11px]"
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold flex items-center gap-1.5 text-xs shadow-xs"
             >
               <MessageSquare className="w-3.5 h-3.5" /> Send WhatsApp
             </button>
@@ -289,7 +294,7 @@ const LeadsPage = () => {
                 setSendChannel('EMAIL');
                 setIsConfirmOpen(true);
               }}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center gap-1 text-[11px]"
+              className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold flex items-center gap-1.5 text-xs shadow-xs"
             >
               <Mail className="w-3.5 h-3.5" /> Send Email
             </button>
@@ -299,21 +304,21 @@ const LeadsPage = () => {
                 setSendChannel('BOTH');
                 setIsConfirmOpen(true);
               }}
-              className="px-3 py-1 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-bold flex items-center gap-1 text-[11px]"
+              className="px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg font-bold flex items-center gap-1.5 text-xs shadow-xs"
             >
               <Send className="w-3.5 h-3.5" /> Send Both
             </button>
 
             <button
               onClick={handleBulkDelete}
-              className="p-1.5 text-red-400 hover:text-red-200 hover:bg-red-950/50 rounded-lg ml-2"
+              className="p-1.5 text-red-400 hover:text-red-200 hover:bg-red-950/60 rounded-lg ml-1"
               title="Delete Selected Leads"
             >
               <Trash2 className="w-4 h-4" />
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Lead Table */}
       <LeadTable
@@ -342,13 +347,13 @@ const LeadsPage = () => {
         isOpen={isDetailsOpen}
         lead={activeLead}
         onClose={() => setIsDetailsOpen(false)}
-        onSendWhatsApp={(lead, msg) => {
+        onSendWhatsApp={(lead) => {
           setIsDetailsOpen(false);
-          handleSendSingleWhatsApp(lead, msg);
+          handleSendSingleWhatsApp(lead);
         }}
-        onSendEmail={(lead, subj, body) => {
+        onSendEmail={(lead) => {
           setIsDetailsOpen(false);
-          handleSendSingleEmail(lead, subj, body);
+          handleSendSingleEmail(lead);
         }}
         onLeadUpdated={fetchLeads}
       />
