@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { previewExcelApi, confirmExcelImportApi } from '../services/leadService';
 import {
   UploadCloud,
@@ -57,16 +58,20 @@ const DEFAULT_MAPS = {
 
 const ImportLeadsPage = () => {
   const [file, setFile] = useState(null);
-  const [step, setStep] = useState(1); // 1: Upload, 2: Column Mapper & Preview, 3: Success
+  const [step, setStep] = useState(1); // 1: Upload, 2: Column Mapper & Preview, 3: Success Summary
   const [previewData, setPreviewData] = useState(null);
   const [columnMapping, setColumnMapping] = useState({});
   const [detectedHeaders, setDetectedHeaders] = useState([]);
   const [duplicateAction, setDuplicateAction] = useState('SKIP');
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState(null);
+  
+  // Structured Import Result & DB Total
+  const [importSummary, setImportSummary] = useState(null);
+  const [databaseTotal, setDatabaseTotal] = useState(0);
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -133,7 +138,23 @@ const ImportLeadsPage = () => {
       });
 
       if (res.success) {
-        setImportResult(res.result);
+        setImportSummary(res.importSummary || {
+          totalRows: previewData.totalRows,
+          validRows: previewData.validRows,
+          created: res.result?.importedCount || 0,
+          updated: res.result?.updatedCount || 0,
+          skipped: res.result?.skippedCount || 0,
+          invalid: previewData.invalidRows || 0,
+          duplicates: previewData.duplicateCount || 0
+        });
+
+        setDatabaseTotal(res.databaseTotal || 0);
+
+        // Invalidate all lead & dashboard query caches in TanStack Query
+        queryClient.invalidateQueries({ queryKey: ['leads'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+        queryClient.invalidateQueries({ queryKey: ['reports'] });
+
         setStep(3);
       }
     } catch (err) {
@@ -289,23 +310,23 @@ const ImportLeadsPage = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center text-xs">
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <span className="text-slate-500 block">Total Records</span>
-                <span className="text-xl font-black text-slate-900">{previewData.totalRecords}</span>
+                <span className="text-slate-500 block font-medium">Total Excel Rows</span>
+                <span className="text-xl font-black text-slate-900">{previewData.totalRows}</span>
               </div>
               <div className="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
-                <span className="text-emerald-700 block">New Leads</span>
+                <span className="text-emerald-700 block font-medium">New Leads</span>
                 <span className="text-xl font-black text-emerald-800">{previewData.newCount}</span>
               </div>
               <div className="bg-amber-50 p-3 rounded-xl border border-amber-200">
-                <span className="text-amber-700 block">Duplicates</span>
+                <span className="text-amber-700 block font-medium">Duplicates</span>
                 <span className="text-xl font-black text-amber-800">{previewData.duplicateCount}</span>
               </div>
               <div className="bg-rose-50 p-3 rounded-xl border border-rose-200">
-                <span className="text-rose-700 block">Invalid Email</span>
+                <span className="text-rose-700 block font-medium">Invalid Email</span>
                 <span className="text-xl font-black text-rose-800">{previewData.invalidEmailCount}</span>
               </div>
               <div className="bg-rose-50 p-3 rounded-xl border border-rose-200">
-                <span className="text-rose-700 block">Invalid Phone</span>
+                <span className="text-rose-700 block font-medium">Invalid Phone</span>
                 <span className="text-xl font-black text-rose-800">{previewData.invalidPhoneCount}</span>
               </div>
             </div>
@@ -386,31 +407,44 @@ const ImportLeadsPage = () => {
       )}
 
       {/* Step 3: Success Confirmation */}
-      {step === 3 && importResult && (
+      {step === 3 && importSummary && (
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xl text-center space-y-6">
           <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900">Leads Imported Successfully!</h2>
+            <h2 className="text-xl font-bold text-slate-900">Import Completed Successfully!</h2>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              All records mapped from your file have been imported into MongoDB. Category-aware outreach messages for WhatsApp & Email are generated and saved as <strong className="text-brand-600">MESSAGE_READY</strong>.
+              All records mapped from your file have been processed. Messages are saved in status <strong className="text-brand-600">MESSAGE_READY</strong>.
             </p>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-md mx-auto text-xs space-y-2 text-left">
-            <div className="flex justify-between">
-              <span className="text-slate-500">New Leads Imported:</span>
-              <strong className="text-emerald-700 font-bold">{importResult.importedCount}</strong>
+          {/* Exact Required Import Summary Breakdown */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 max-w-md mx-auto text-xs space-y-2.5 text-left">
+            <div className="flex justify-between border-b border-slate-200 pb-1.5">
+              <span className="text-slate-600 font-semibold">Total Excel Rows Parsed:</span>
+              <strong className="text-slate-900 font-bold">{importSummary.totalRows}</strong>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Leads Updated:</span>
-              <strong className="text-blue-700 font-bold">{importResult.updatedCount}</strong>
+              <span className="text-slate-600 font-semibold">New Leads Created:</span>
+              <strong className="text-emerald-700 font-bold">+{importSummary.created}</strong>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500">Duplicates Skipped:</span>
-              <strong className="text-amber-700 font-bold">{importResult.skippedCount}</strong>
+              <span className="text-slate-600 font-semibold">Leads Updated:</span>
+              <strong className="text-blue-700 font-bold">{importSummary.updated}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-600 font-semibold">Duplicates Skipped:</span>
+              <strong className="text-amber-700 font-bold">{importSummary.skipped}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-600 font-semibold">Invalid Rows:</span>
+              <strong className="text-rose-700 font-bold">{importSummary.invalid}</strong>
+            </div>
+            <div className="flex justify-between border-t border-slate-200 pt-2 text-sm font-bold text-slate-900">
+              <span>Total Leads in Database:</span>
+              <span className="text-brand-600 text-base">{databaseTotal}</span>
             </div>
           </div>
 
@@ -419,7 +453,7 @@ const ImportLeadsPage = () => {
               onClick={() => navigate('/leads')}
               className="px-8 py-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-lg transition-all"
             >
-              Open CRM Lead Table & Review Messages
+              Open CRM Lead Table ({databaseTotal} Leads)
             </button>
           </div>
         </div>
