@@ -7,7 +7,7 @@ import ConfirmationModal from '../components/common/ConfirmationModal';
 import Pagination from '../components/common/Pagination';
 import { getLeadsApi, bulkDeleteLeadsApi, regenerateLeadMessageApi } from '../services/leadService';
 import { bulkSendMessagesApi, sendEmailApi } from '../services/outreachService';
-import { Search, MessageSquare, Mail, Send, Trash2, Upload, Filter } from 'lucide-react';
+import { Search, MessageSquare, Mail, Send, Trash2, Upload, Filter, RotateCcw, X } from 'lucide-react';
 
 const quickFilterTabs = [
   { id: 'ALL', label: 'All Leads' },
@@ -33,12 +33,22 @@ const LeadsPage = () => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters State
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedLeadStatus, setSelectedLeadStatus] = useState('');
+  // Filters State synced with URL searchParams
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [selectedCity, setSelectedCity] = useState(searchParams.get('city') || '');
+  const [selectedLeadStatus, setSelectedLeadStatus] = useState(searchParams.get('leadStatus') || '');
   const [selectedQuickFilter, setSelectedQuickFilter] = useState(searchParams.get('quickFilter') || 'ALL');
+
+  // Sync state when searchParams change (e.g. from header search or dashboard links)
+  useEffect(() => {
+    const s = searchParams.get('search');
+    const c = searchParams.get('category');
+    const q = searchParams.get('quickFilter');
+    if (s !== null && s !== undefined) setSearch(s);
+    if (c !== null && c !== undefined) setSelectedCategory(c);
+    if (q !== null && q !== undefined) setSelectedQuickFilter(q);
+  }, [searchParams]);
 
   // Lead Selection
   const [selectedLeadIds, setSelectedLeadIds] = useState([]);
@@ -248,19 +258,49 @@ const LeadsPage = () => {
 
       {/* Search & Filter Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
-          <div className="relative flex-1 sm:max-w-xs">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Search company, phone, email..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-brand-500"
-            />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setPage(1);
+            fetchLeads();
+          }}
+          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1"
+        >
+          <div className="relative flex-1 sm:max-w-md flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <input
+                type="text"
+                placeholder="Search company, phone, email, city, category..."
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 font-medium text-slate-800 placeholder-slate-400"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('');
+                    setPage(1);
+                  }}
+                  className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                  title="Clear search text"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg shadow-xs transition-colors shrink-0 flex items-center gap-1.5"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
@@ -270,7 +310,7 @@ const LeadsPage = () => {
                 setSelectedCategory(e.target.value);
                 setPage(1);
               }}
-              className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-medium text-slate-700 w-full sm:w-auto"
+              className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-semibold text-slate-700 w-full sm:w-auto"
             >
               <option value="">All Categories</option>
               {categories.map((c, i) => (
@@ -286,7 +326,7 @@ const LeadsPage = () => {
                 setSelectedCity(e.target.value);
                 setPage(1);
               }}
-              className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-medium text-slate-700 w-full sm:w-auto"
+              className="p-2 bg-slate-50 border border-slate-200 rounded-lg outline-none font-semibold text-slate-700 w-full sm:w-auto"
             >
               <option value="">All Cities</option>
               {cities.map((c, i) => (
@@ -295,8 +335,27 @@ const LeadsPage = () => {
                 </option>
               ))}
             </select>
+
+            {(search || selectedCategory || selectedCity || selectedQuickFilter !== 'ALL') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setSelectedCategory('');
+                  setSelectedCity('');
+                  setSelectedQuickFilter('ALL');
+                  setPage(1);
+                  navigate('/leads');
+                }}
+                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
           </div>
-        </div>
+        </form>
       </div>
 
       {/* Selected Leads Floating/Inline Bulk Toolbar */}

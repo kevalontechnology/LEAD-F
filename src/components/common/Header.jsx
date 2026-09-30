@@ -1,9 +1,21 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../store/authContext';
-import { LogOut, User, Bell, Search, ShieldCheck, Menu } from 'lucide-react';
+import { LogOut, User, Bell, Search, ShieldCheck, Menu, X } from 'lucide-react';
 
 const Header = ({ onToggleSidebar }) => {
   const { user, logout } = useContext(AuthContext);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleHeaderSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/leads?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/leads');
+    }
+  };
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 shadow-xs">
@@ -17,15 +29,32 @@ const Header = ({ onToggleSidebar }) => {
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Search Bar */}
-        <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5 text-sm text-slate-500 w-48 md:w-80 border border-slate-200">
-          <Search className="w-4 h-4 text-slate-400 shrink-0" />
+        {/* Functional Search Bar Form */}
+        <form onSubmit={handleHeaderSearch} className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-xl px-3 py-1.5 text-sm text-slate-500 w-48 md:w-80 border border-slate-200 focus-within:ring-2 focus-within:ring-brand-500 focus-within:bg-white transition-all">
+          <button type="submit" title="Search Leads" className="hover:text-brand-600 transition-colors">
+            <Search className="w-4 h-4 text-slate-400 shrink-0" />
+          </button>
           <input
             type="text"
-            placeholder="Search leads, phone, email..."
-            className="bg-transparent border-none outline-none text-xs text-slate-700 w-full placeholder-slate-400"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search leads, company, phone, city..."
+            className="bg-transparent border-none outline-none text-xs text-slate-800 w-full placeholder-slate-400 font-medium"
           />
-        </div>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                navigate('/leads');
+              }}
+              className="text-slate-400 hover:text-slate-600 text-xs p-0.5"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </form>
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
