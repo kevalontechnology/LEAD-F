@@ -6,7 +6,7 @@ import FollowUpModal from '../components/followups/FollowUpModal';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 import Pagination from '../components/common/Pagination';
 import { getLeadsApi, bulkDeleteLeadsApi, regenerateLeadMessageApi } from '../services/leadService';
-import { bulkSendMessagesApi } from '../services/outreachService';
+import { bulkSendMessagesApi, sendEmailApi } from '../services/outreachService';
 import { Search, MessageSquare, Mail, Send, Trash2, Upload, Filter } from 'lucide-react';
 
 const quickFilterTabs = [
@@ -49,6 +49,7 @@ const LeadsPage = () => {
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [sendChannel, setSendChannel] = useState('WHATSAPP');
+  const [pendingEmailContent, setPendingEmailContent] = useState(null);
   const [sending, setSending] = useState(false);
 
   const fetchLeads = async () => {
@@ -118,10 +119,15 @@ const LeadsPage = () => {
     setIsConfirmOpen(true);
   };
 
-  const handleSendSingleEmail = async (lead) => {
+  const handleSendSingleEmail = async (lead, customSubject, customBody) => {
     setActiveLead(lead);
     setSelectedLeadIds([lead._id]);
     setSendChannel('EMAIL');
+    setPendingEmailContent(
+      customSubject !== undefined || customBody !== undefined
+        ? { leadId: lead._id, subject: customSubject, body: customBody }
+        : null
+    );
     setIsConfirmOpen(true);
   };
 
@@ -146,6 +152,28 @@ const LeadsPage = () => {
 
     try {
       setSending(true);
+
+      if (sendChannel === 'EMAIL' && pendingEmailContent) {
+        const res = await sendEmailApi(
+          pendingEmailContent.leadId,
+          pendingEmailContent.subject,
+          pendingEmailContent.body
+        );
+        const emailResult = res.result;
+
+        if (emailResult?.success) {
+          alert(`Email sent to ${emailResult.leadTitle}`);
+        } else {
+          alert(emailResult?.error || 'Email sending failed');
+        }
+
+        setIsConfirmOpen(false);
+        setSelectedLeadIds([]);
+        setPendingEmailContent(null);
+        fetchLeads();
+        return;
+      }
+
       const res = await bulkSendMessagesApi(selectedLeadIds, sendChannel);
       if (res.success) {
         alert(
@@ -351,9 +379,9 @@ const LeadsPage = () => {
           setIsDetailsOpen(false);
           handleSendSingleWhatsApp(lead);
         }}
-        onSendEmail={(lead) => {
+        onSendEmail={(lead, subject, body) => {
           setIsDetailsOpen(false);
-          handleSendSingleEmail(lead);
+          handleSendSingleEmail(lead, subject, body);
         }}
         onLeadUpdated={fetchLeads}
       />
@@ -374,7 +402,10 @@ const LeadsPage = () => {
         selectedCount={selectedLeadIds.length}
         channel={sendChannel}
         onConfirm={handleConfirmSend}
-        onClose={() => setIsConfirmOpen(false)}
+        onClose={() => {
+          setIsConfirmOpen(false);
+          setPendingEmailContent(null);
+        }}
         loading={sending}
       />
     </div>
