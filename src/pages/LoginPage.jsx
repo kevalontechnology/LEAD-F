@@ -27,18 +27,18 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-brand-600/30 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-[#021c33] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Orbs with Kevalon Brand Palette */}
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#0a4b7c]/40 rounded-full blur-3xl"></div>
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#34b3d6]/25 rounded-full blur-3xl"></div>
 
       <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 space-y-6 relative z-10">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-blue-400 text-white font-black text-2xl mx-auto flex items-center justify-center shadow-lg shadow-brand-500/30">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#003865] via-[#0a4b7c] to-[#34b3d6] text-white font-black text-2xl mx-auto flex items-center justify-center shadow-lg shadow-[#0a4b7c]/30">
             K
           </div>
-          <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Kevalon Technology</h1>
+          <h1 className="text-xl font-extrabold text-[#003865] tracking-tight">Kevalon Technology</h1>
           <p className="text-xs text-slate-500 font-medium">Outreach CRM & Lead Management Portal</p>
         </div>
 
