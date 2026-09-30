@@ -10,7 +10,10 @@ import {
   ArrowRight,
   ShieldCheck,
   Table,
-  Sliders
+  Sliders,
+  X,
+  FilePlus,
+  Files
 } from 'lucide-react';
 
 const CRM_FIELDS = [
@@ -99,7 +102,7 @@ const getSmartMapping = (header) => {
 };
 
 const ImportLeadsPage = () => {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [step, setStep] = useState(1); // 1: Upload, 2: Column Mapper & Preview, 3: Success Summary
   const [previewData, setPreviewData] = useState(null);
   const [columnMapping, setColumnMapping] = useState({});
@@ -107,7 +110,7 @@ const ImportLeadsPage = () => {
   const [duplicateAction, setDuplicateAction] = useState('SKIP');
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
-  
+
   // Structured Import Result & DB Total
   const [importSummary, setImportSummary] = useState(null);
   const [databaseTotal, setDatabaseTotal] = useState(0);
@@ -116,19 +119,30 @@ const ImportLeadsPage = () => {
   const queryClient = useQueryClient();
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFiles = Array.from(e.target.files);
+      setFiles((prevFiles) => {
+        const existingKeys = new Set(prevFiles.map((f) => `${f.name}-${f.size}`));
+        const uniqueNew = selectedFiles.filter((f) => !existingKeys.has(`${f.name}-${f.size}`));
+        return [...prevFiles, ...uniqueNew];
+      });
     }
+  };
+
+  const handleRemoveFile = (indexToRemove) => {
+    setFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleUploadAndPreview = async (e, customMap = null) => {
     if (e) e.preventDefault();
-    if (!file) return alert('Please select an Excel or CSV file.');
+    if (files.length === 0) return alert('Please select at least one Excel or CSV file.');
 
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append('file', file);
+      files.forEach((f) => {
+        formData.append('files', f);
+      });
       if (customMap) {
         formData.append('mapping', JSON.stringify(customMap));
       }
@@ -151,7 +165,7 @@ const ImportLeadsPage = () => {
         setStep(2);
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to parse Excel file');
+      alert(err.response?.data?.message || 'Failed to parse uploaded Excel file(s)');
     } finally {
       setLoading(false);
     }
@@ -191,7 +205,7 @@ const ImportLeadsPage = () => {
 
         setDatabaseTotal(res.databaseTotal || 0);
 
-        // Invalidate all lead & dashboard query caches in TanStack Query
+        // Invalidate query caches
         queryClient.invalidateQueries({ queryKey: ['leads'] });
         queryClient.invalidateQueries({ queryKey: ['dashboard'] });
         queryClient.invalidateQueries({ queryKey: ['reports'] });
@@ -210,15 +224,15 @@ const ImportLeadsPage = () => {
       {/* Step Indicator Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-4 gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Excel / CSV Lead Import</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Excel / CSV Multi-File Lead Import</h1>
           <p className="text-xs text-slate-500">
-            Confirm column mapping for your uploaded file, resolve duplicates, and import leads.
+            Upload single or multiple Excel/CSV files at once, map columns dynamically, and import into CRM.
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs font-semibold">
           <span className={`px-3 py-1 rounded-full ${step === 1 ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
-            1. Upload
+            1. Select Files
           </span>
           <span className="text-slate-300">→</span>
           <span className={`px-3 py-1 rounded-full ${step === 2 ? 'bg-brand-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
@@ -231,32 +245,61 @@ const ImportLeadsPage = () => {
         </div>
       </div>
 
-      {/* Step 1: Upload File */}
+      {/* Step 1: Upload Files */}
       {step === 1 && (
         <form onSubmit={(e) => handleUploadAndPreview(e)} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-xs space-y-6">
           <div className="border-2 border-dashed border-slate-300 hover:border-brand-500 rounded-2xl p-8 text-center transition-colors bg-slate-50/50">
             <UploadCloud className="w-12 h-12 text-brand-500 mx-auto mb-3" />
-            <p className="text-sm font-bold text-slate-800">Upload your Excel or CSV File</p>
-            <p className="text-xs text-slate-500 mt-1">Supports .xlsx, .xls, and .csv formats</p>
+            <p className="text-sm font-bold text-slate-800">Upload Single or Multiple Excel / CSV Files</p>
+            <p className="text-xs text-slate-500 mt-1">Select one or multiple .xlsx, .xls, and .csv files</p>
 
             <input
               type="file"
               accept=".xlsx, .xls, .csv"
+              multiple
               onChange={handleFileChange}
               className="hidden"
               id="file-upload"
             />
             <label
               htmlFor="file-upload"
-              className="inline-block mt-4 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all"
+              className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl cursor-pointer shadow-sm transition-all"
             >
-              Choose File
+              <FilePlus className="w-4 h-4" />
+              {files.length > 0 ? 'Select Additional Files' : 'Choose Excel / CSV Files'}
             </label>
 
-            {file && (
-              <div className="mt-4 inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-xl text-xs font-semibold">
-                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-                {file.name} ({(file.size / 1024).toFixed(1)} KB)
+            {/* List of selected files */}
+            {files.length > 0 && (
+              <div className="mt-5 space-y-2 text-left max-w-xl mx-auto">
+                <div className="flex justify-between items-center text-xs font-bold text-slate-700 px-1">
+                  <span className="flex items-center gap-1.5">
+                    <Files className="w-4 h-4 text-brand-600" />
+                    Selected Files ({files.length}):
+                  </span>
+                  <span className="text-slate-500 font-normal">
+                    Total: {(files.reduce((acc, f) => acc + f.size, 0) / 1024).toFixed(1)} KB
+                  </span>
+                </div>
+                <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1">
+                  {files.map((f, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-emerald-50 text-emerald-900 border border-emerald-200 px-3.5 py-2 rounded-xl text-xs font-semibold">
+                      <div className="flex items-center gap-2 truncate">
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        <span className="truncate" title={f.name}>{f.name}</span>
+                        <span className="text-[10px] text-emerald-600 flex-shrink-0">({(f.size / 1024).toFixed(1)} KB)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFile(idx)}
+                        className="p-1 hover:bg-emerald-200 rounded-lg text-emerald-800 transition-colors ml-2"
+                        title="Remove file"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -264,27 +307,27 @@ const ImportLeadsPage = () => {
           <div className="bg-brand-50 border border-brand-100 p-4 rounded-xl text-xs text-brand-900 space-y-2">
             <p className="font-bold flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-brand-600" />
-              Dynamic Column Mapping
+              Dynamic Multi-File & Column Auto-Mapping
             </p>
             <p className="text-[11px] text-slate-600">
-              Any file column structure can be uploaded. In the next step, you will be able to confirm and map each column in your file to CRM fields.
+              You can upload multiple Excel files at once. All data will be merged, deduplicated, auto-mapped, and processed in a single batch.
             </p>
           </div>
 
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={!file || loading}
+              disabled={files.length === 0 || loading}
               className="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  Processing File...
+                  Processing {files.length} File(s)...
                 </>
               ) : (
                 <>
-                  Parse Columns & Preview
+                  Parse Columns & Preview ({files.length} Files)
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -298,13 +341,13 @@ const ImportLeadsPage = () => {
         <div className="space-y-6">
           {/* Interactive Column Mapping Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-brand-600" />
-                Confirm Column Mapping for "{file?.name}"
+                Confirm Column Mapping for {files.length} Uploaded File(s)
               </h2>
               <span className="text-xs text-slate-500 font-medium">
-                Detected Columns: {detectedHeaders.length}
+                Detected Columns Across Files: {detectedHeaders.length}
               </span>
             </div>
 
@@ -345,7 +388,7 @@ const ImportLeadsPage = () => {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Table className="w-4 h-4 text-emerald-600" />
-                Import Summary Preview
+                Combined Import Summary Preview ({files.length} Files)
               </h3>
             </div>
 
@@ -421,7 +464,7 @@ const ImportLeadsPage = () => {
                 onClick={() => setStep(1)}
                 className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
               >
-                Upload Different File
+                Change Selected Files
               </button>
 
               <button
@@ -455,13 +498,13 @@ const ImportLeadsPage = () => {
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-slate-900">Import Completed Successfully!</h2>
+            <h2 className="text-xl font-bold text-slate-900">Multi-File Import Completed Successfully!</h2>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              All records mapped from your file have been processed. Messages are saved in status <strong className="text-brand-600">MESSAGE_READY</strong>.
+              All records mapped from your {files.length} uploaded file(s) have been processed. Messages are generated and saved in status <strong className="text-brand-600">MESSAGE_READY</strong>.
             </p>
           </div>
 
-          {/* Exact Required Import Summary Breakdown */}
+          {/* Import Summary Breakdown */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 max-w-md mx-auto text-xs space-y-2.5 text-left">
             <div className="flex justify-between border-b border-slate-200 pb-1.5">
               <span className="text-slate-600 font-semibold">Total Excel Rows Parsed:</span>
