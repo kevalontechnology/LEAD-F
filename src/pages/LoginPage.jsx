@@ -34,12 +34,11 @@ const LoginPage = () => {
 
       <div className="max-w-md w-full bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8 space-y-6 relative z-10">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#003865] via-[#0a4b7c] to-[#34b3d6] text-white font-black text-2xl mx-auto flex items-center justify-center shadow-lg shadow-[#0a4b7c]/30">
-            K
+        <div className="text-center space-y-3">
+          <div className="bg-white p-3 rounded-2xl shadow-lg border border-slate-100 max-w-[240px] mx-auto">
+            <img src="/logo.png" alt="Kevalon Technology Logo" className="h-12 w-full object-contain mx-auto" />
           </div>
-          <h1 className="text-xl font-extrabold text-[#003865] tracking-tight">Kevalon Technology</h1>
-          <p className="text-xs text-slate-500 font-medium">Outreach CRM & Lead Management Portal</p>
+          <p className="text-xs text-slate-500 font-medium pt-1">Outreach CRM & Lead Management Portal</p>
         </div>
 
         {error && (

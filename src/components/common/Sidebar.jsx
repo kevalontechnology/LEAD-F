@@ -47,14 +47,10 @@ const Sidebar = ({ isOpen, onClose }) => {
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800 bg-slate-950/50">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#003865] via-[#0a4b7c] to-[#34b3d6] flex items-center justify-center text-white font-black text-lg shadow-md border border-white/10">
-              K
-            </div>
-            <div>
-              <h1 className="font-extrabold text-sm text-white tracking-wider leading-tight">KEVALON</h1>
-              <p className="text-[10px] text-[#2bb5d8] font-semibold tracking-widest uppercase">Technology CRM</p>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-950/60">
+          <div className="flex items-center gap-2.5">
+            <div className="bg-white/95 p-1 rounded-xl shadow-xs border border-white/20">
+              <img src="/logo.png" alt="Kevalon Technology Logo" className="h-8 object-contain" />
             </div>
           </div>
 
