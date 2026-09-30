@@ -26,34 +26,76 @@ const CRM_FIELDS = [
   { key: 'ignore', label: '(Ignore Column)' }
 ];
 
-const DEFAULT_MAPS = {
-  title: 'title',
-  'company name': 'title',
-  company: 'title',
-  titlename: 'title',
-  name: 'title',
-  'business name': 'title',
-  categoryname: 'categoryName',
-  category: 'categoryName',
-  industry: 'categoryName',
-  business: 'categoryName',
-  phone: 'phone',
-  mobile: 'phone',
-  contact: 'phone',
-  'phone number': 'phone',
-  'mobile number': 'phone',
-  address: 'address',
-  city: 'city',
-  location: 'city',
-  state: 'state',
-  website: 'website',
-  url: 'website',
-  domain: 'website',
-  email: 'email',
-  'email address': 'email',
-  'mail id': 'email',
-  'contact person': 'contactPerson',
-  owner: 'contactPerson'
+const getSmartMapping = (header) => {
+  if (!header) return 'ignore';
+  const clean = String(header).toLowerCase().trim();
+
+  const directMaps = {
+    title: 'title',
+    'company name': 'title',
+    company: 'title',
+    titlename: 'title',
+    name: 'title',
+    'business name': 'title',
+    'company / title': 'title',
+    'column 1': 'title',
+    categoryname: 'categoryName',
+    category: 'categoryName',
+    industry: 'categoryName',
+    business: 'categoryName',
+    'column 2': 'categoryName',
+    phone: 'phone',
+    mobile: 'phone',
+    contact: 'phone',
+    'phone number': 'phone',
+    'mobile number': 'phone',
+    'phone / address': 'phone',
+    'column 3': 'phone',
+    address: 'address',
+    city: 'city',
+    location: 'city',
+    state: 'state',
+    website: 'website',
+    url: 'website',
+    domain: 'website',
+    email: 'email',
+    'email address': 'email',
+    'mail id': 'email',
+    'contact person': 'contactPerson',
+    owner: 'contactPerson'
+  };
+
+  if (directMaps[clean]) return directMaps[clean];
+
+  if (clean.includes('company') || clean.includes('title') || clean.includes('business') || clean.includes('firm') || clean.includes('col 1') || clean.includes('column 1')) {
+    return 'title';
+  }
+  if (clean.includes('category') || clean.includes('industry') || clean.includes('type') || clean.includes('col 2') || clean.includes('column 2')) {
+    return 'categoryName';
+  }
+  if (clean.includes('phone') || clean.includes('mobile') || clean.includes('contact') || clean.includes('cell') || clean.includes('num') || clean.includes('col 3') || clean.includes('column 3')) {
+    return 'phone';
+  }
+  if (clean.includes('email') || clean.includes('mail')) {
+    return 'email';
+  }
+  if (clean.includes('city') || clean.includes('location')) {
+    return 'city';
+  }
+  if (clean.includes('state')) {
+    return 'state';
+  }
+  if (clean.includes('website') || clean.includes('site') || clean.includes('url') || clean.includes('domain')) {
+    return 'website';
+  }
+  if (clean.includes('address') || clean.includes('street')) {
+    return 'address';
+  }
+  if (clean.includes('person') || clean.includes('owner') || clean.includes('manager')) {
+    return 'contactPerson';
+  }
+
+  return 'ignore';
 };
 
 const ImportLeadsPage = () => {
@@ -101,8 +143,7 @@ const ImportLeadsPage = () => {
         if (!customMap) {
           const initialMap = {};
           headers.forEach((h) => {
-            const lowerH = h.toLowerCase().trim();
-            initialMap[h] = DEFAULT_MAPS[lowerH] || 'ignore';
+            initialMap[h] = getSmartMapping(h);
           });
           setColumnMapping(initialMap);
         }
