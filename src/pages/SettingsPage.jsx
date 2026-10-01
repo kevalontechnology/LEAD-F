@@ -17,10 +17,12 @@ const SettingsPage = () => {
     smtpFromName: 'Harsh Kothari | Kevalon Technology',
     smtpFromEmail: 'sales@kevalontechnology.in',
     whatsappAccessToken: '',
-    whatsappPhoneNumberId: '',
-    whatsappBusinessAccountId: '',
+    whatsappPhoneNumberId: '285349974658896',
+    whatsappBusinessAccountId: '250264581511046',
     whatsappApiVersion: 'v18.0',
-    whatsappPublicKey: ''
+    whatsappPublicKey: '',
+    whatsportalApiKey: 'wp_live_7gorCETjlPx2m05s6DJxDXozUPyX56Jg049D2l',
+    whatsportalApiBaseUrl: 'https://app.whatsportal.io/api'
   });
 
   const [loading, setLoading] = useState(true);
@@ -238,6 +240,28 @@ const SettingsPage = () => {
               value={settings.whatsappBusinessAccountId}
               onChange={(e) => setSettings({ ...settings, whatsappBusinessAccountId: e.target.value })}
               className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="font-semibold text-slate-700">WhatsPortal Live API Key (`wp_live_...`)</label>
+            <input
+              type="text"
+              placeholder="wp_live_..."
+              value={settings.whatsportalApiKey || ''}
+              onChange={(e) => setSettings({ ...settings, whatsportalApiKey: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="font-semibold text-slate-700">WhatsPortal API Base URL</label>
+            <input
+              type="text"
+              placeholder="https://app.whatsportal.io/api"
+              value={settings.whatsportalApiBaseUrl || ''}
+              onChange={(e) => setSettings({ ...settings, whatsportalApiBaseUrl: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono text-xs"
             />
           </div>
 
