@@ -147,54 +147,53 @@ const SettingsPage = () => {
         </div>
       </div>
 
-      {/* Email Settings */}
+      {/* Brevo Email Settings */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
-        <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Mail className="w-4 h-4 text-blue-600" />
-          Email Nodemailer SMTP Credentials
-        </h2>
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <Mail className="w-4 h-4 text-brand-600" />
+            Brevo (Sendinblue) Transactional Email API Configuration
+          </h2>
+          <span className={`px-3 py-1 rounded-full text-[11px] font-bold ${
+            settings.brevoApiKey
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-amber-50 text-amber-700 border border-amber-200'
+          }`}>
+            {settings.brevoApiKey ? '🟢 Brevo Connected (Live)' : '🟡 Brevo Key Pending (Simulation Mode)'}
+          </span>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="font-semibold text-slate-700">SMTP Host</label>
-            <input
-              type="text"
-              placeholder="smtp.gmail.com"
-              value={settings.smtpHost}
-              onChange={(e) => setSettings({ ...settings, smtpHost: e.target.value })}
-              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold text-slate-700">SMTP Port</label>
-            <input
-              type="number"
-              value={settings.smtpPort}
-              onChange={(e) => setSettings({ ...settings, smtpPort: parseInt(e.target.value, 10) })}
-              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold text-slate-700">SMTP Username / Email</label>
-            <input
-              type="text"
-              placeholder="sales@kevalontechnology.in"
-              value={settings.smtpUsername}
-              onChange={(e) => setSettings({ ...settings, smtpUsername: e.target.value })}
-              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
-            />
-          </div>
-
-          <div>
-            <label className="font-semibold text-slate-700">SMTP App Password</label>
+          <div className="md:col-span-2">
+            <label className="font-semibold text-slate-700">Brevo API Key (`xkeysib-...`)</label>
             <input
               type="password"
-              placeholder="••••••••••••"
-              value={settings.smtpPassword}
-              onChange={(e) => setSettings({ ...settings, smtpPassword: e.target.value })}
-              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
+              placeholder="xkeysib-..."
+              value={settings.brevoApiKey || ''}
+              onChange={(e) => setSettings({ ...settings, brevoApiKey: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono text-xs focus:ring-2 focus:ring-brand-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Brevo Sender Email</label>
+            <input
+              type="email"
+              placeholder="sales@kevalontechnology.in"
+              value={settings.brevoSenderEmail || ''}
+              onChange={(e) => setSettings({ ...settings, brevoSenderEmail: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-medium"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700">Brevo Sender Name</label>
+            <input
+              type="text"
+              placeholder="Harsh Kothari | Kevalon Technology"
+              value={settings.brevoSenderName || ''}
+              onChange={(e) => setSettings({ ...settings, brevoSenderName: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-medium"
             />
           </div>
         </div>
