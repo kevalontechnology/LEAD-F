@@ -74,15 +74,15 @@ const LeadDetailsModal = ({
     }
   };
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = async (persona = 'CEO') => {
     try {
       setRegenerating(true);
-      const res = await regenerateLeadMessageApi(lead._id);
+      const res = await regenerateLeadMessageApi(lead._id, persona);
       if (res.success && res.lead) {
         setWhatsappMsg(res.lead.generatedWhatsAppMessage);
         setEmailSubject(res.lead.generatedEmailSubject);
         setEmailBody(res.lead.generatedEmailBody);
-        alert('Personalized message regenerated based on category!');
+        alert(`Personalized message regenerated for ${persona === 'CEO' ? 'CEO - Harsh Kothari' : 'Sales - Varun'}!`);
         if (onLeadUpdated) onLeadUpdated();
       }
     } catch (err) {
@@ -195,18 +195,27 @@ const LeadDetailsModal = ({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {activeTab === 'messages' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Generated Outreach Messages
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-brand-50/60 p-3 rounded-xl border border-brand-100">
+                <span className="text-xs font-bold text-brand-900 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-brand-600" />
+                  Regenerate Pitch by Sender Persona:
                 </span>
-                <button
-                  onClick={handleRegenerate}
-                  disabled={regenerating}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-700 text-xs font-semibold rounded-lg border border-brand-200 transition-colors disabled:opacity-50"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-                  {regenerating ? 'Regenerating...' : 'Regenerate Category Pitch'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleRegenerate('CEO')}
+                    disabled={regenerating}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-lg transition-colors shadow-xs disabled:opacity-50"
+                  >
+                    👑 CEO (Harsh Kothari)
+                  </button>
+                  <button
+                    onClick={() => handleRegenerate('SALES')}
+                    disabled={regenerating}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-colors shadow-xs disabled:opacity-50"
+                  >
+                    💼 Sales (Varun)
+                  </button>
+                </div>
               </div>
 
               {/* Side-by-side WhatsApp & Email Editors */}

@@ -1,9 +1,9 @@
-import React from 'react';
-import { AlertTriangle, Send, X, ShieldAlert } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertTriangle, Send, X, ShieldAlert, UserCheck, Crown, Briefcase } from 'lucide-react';
 
 const ConfirmationModal = ({
   isOpen,
-  title = 'Confirm Action',
+  title = 'Confirm Outreach Action',
   description,
   selectedCount = 0,
   whatsappCount = 0,
@@ -13,6 +13,8 @@ const ConfirmationModal = ({
   onClose,
   loading = false
 }) => {
+  const [senderPersona, setSenderPersona] = useState('CEO'); // 'CEO' or 'SALES'
+
   if (!isOpen) return null;
 
   return (
@@ -38,6 +40,55 @@ const ConfirmationModal = ({
           <p className="text-sm text-slate-600 leading-relaxed">
             {description || 'Are you sure you want to proceed with sending outreach messages?'}
           </p>
+
+          {/* Sender Persona Selection */}
+          <div className="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <UserCheck className="w-4 h-4 text-brand-600" />
+                Select Sender Persona (મેસેજ મોકલનાર):
+              </span>
+              <span className="text-[10px] text-brand-600 font-bold">2 Personas Available</span>
+            </label>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => setSenderPersona('CEO')}
+                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                  senderPersona === 'CEO'
+                    ? 'bg-brand-600 text-white border-brand-600 shadow-md font-bold'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <span className="text-xs font-bold flex items-center gap-1">
+                  <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  Harsh Kothari
+                </span>
+                <span className={`text-[10px] mt-1 ${senderPersona === 'CEO' ? 'text-brand-100' : 'text-slate-500'}`}>
+                  CEO & Founder
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSenderPersona('SALES')}
+                className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all ${
+                  senderPersona === 'SALES'
+                    ? 'bg-brand-600 text-white border-brand-600 shadow-md font-bold'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <span className="text-xs font-bold flex items-center gap-1">
+                  <Briefcase className="w-3.5 h-3.5 text-sky-300" />
+                  Varun
+                </span>
+                <span className={`text-[10px] mt-1 ${senderPersona === 'SALES' ? 'text-brand-100' : 'text-slate-500'}`}>
+                  Sales Executive
+                </span>
+              </button>
+            </div>
+          </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
             <div className="flex justify-between items-center text-xs text-slate-600">
@@ -81,9 +132,9 @@ const ConfirmationModal = ({
 
           <button
             type="button"
-            onClick={onConfirm}
+            onClick={() => onConfirm(senderPersona)}
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 disabled:opacity-50 transition-colors shadow-sm"
           >
             {loading ? (
               <>

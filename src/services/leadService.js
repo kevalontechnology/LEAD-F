@@ -47,7 +47,7 @@ export const updateLeadMessageApi = async (id, data) => {
   return res.data;
 };
 
-export const regenerateLeadMessageApi = async (id) => {
-  const res = await api.post(`/leads/${id}/regenerate-message`);
+export const regenerateLeadMessageApi = async (id, senderPersona = 'CEO') => {
+  const res = await api.post(`/leads/${id}/regenerate-message`, { senderPersona });
   return res.data;
 };

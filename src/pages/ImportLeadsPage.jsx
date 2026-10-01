@@ -108,6 +108,7 @@ const ImportLeadsPage = () => {
   const [columnMapping, setColumnMapping] = useState({});
   const [detectedHeaders, setDetectedHeaders] = useState([]);
   const [duplicateAction, setDuplicateAction] = useState('SKIP');
+  const [senderPersona, setSenderPersona] = useState('CEO'); // 'CEO' or 'SALES'
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
 
@@ -189,7 +190,8 @@ const ImportLeadsPage = () => {
 
       const res = await confirmExcelImportApi({
         records: recordsToImport,
-        duplicateAction
+        duplicateAction,
+        senderPersona
       });
 
       if (res.success) {
@@ -412,6 +414,59 @@ const ImportLeadsPage = () => {
               <div className="bg-rose-50 p-3 rounded-xl border border-rose-200">
                 <span className="text-rose-700 block font-medium">Invalid Phone</span>
                 <span className="text-xl font-black text-rose-800">{previewData.invalidPhoneCount}</span>
+              </div>
+            </div>
+
+            {/* Sender Persona Selection */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
+              <h4 className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                <span>Select Sender Persona for Message Generation:</span>
+                <span className="text-[10px] text-brand-600 font-bold">2 Personas Available</span>
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div
+                  onClick={() => setSenderPersona('CEO')}
+                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                    senderPersona === 'CEO'
+                      ? 'bg-brand-600 text-white border-brand-600 font-bold shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="personaImport"
+                      checked={senderPersona === 'CEO'}
+                      onChange={() => setSenderPersona('CEO')}
+                    />
+                    <span>👑 Harsh Kothari</span>
+                  </div>
+                  <span className={`text-[10px] ${senderPersona === 'CEO' ? 'text-brand-100' : 'text-slate-500'}`}>
+                    CEO & Founder
+                  </span>
+                </div>
+
+                <div
+                  onClick={() => setSenderPersona('SALES')}
+                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                    senderPersona === 'SALES'
+                      ? 'bg-brand-600 text-white border-brand-600 font-bold shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="personaImport"
+                      checked={senderPersona === 'SALES'}
+                      onChange={() => setSenderPersona('SALES')}
+                    />
+                    <span>💼 Varun</span>
+                  </div>
+                  <span className={`text-[10px] ${senderPersona === 'SALES' ? 'text-brand-100' : 'text-slate-500'}`}>
+                    Sales Executive
+                  </span>
+                </div>
               </div>
             </div>
 
