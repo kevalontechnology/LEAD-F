@@ -19,7 +19,8 @@ const SettingsPage = () => {
     whatsappAccessToken: '',
     whatsappPhoneNumberId: '',
     whatsappBusinessAccountId: '',
-    whatsappApiVersion: 'v18.0'
+    whatsappApiVersion: 'v18.0',
+    whatsappPublicKey: ''
   });
 
   const [loading, setLoading] = useState(true);
@@ -238,6 +239,17 @@ const SettingsPage = () => {
               onChange={(e) => setSettings({ ...settings, whatsappBusinessAccountId: e.target.value })}
               className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono"
             />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="font-semibold text-slate-700">WhatsApp Public Key (RSA Key / Webhook Security)</label>
+            <textarea
+              rows="4"
+              placeholder="-----BEGIN PUBLIC KEY-----\n..."
+              value={settings.whatsappPublicKey || ''}
+              onChange={(e) => setSettings({ ...settings, whatsappPublicKey: e.target.value })}
+              className="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 mt-1 font-mono text-xs"
+            ></textarea>
           </div>
         </div>
       </div>
