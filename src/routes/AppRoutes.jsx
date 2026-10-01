@@ -37,6 +37,14 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const AdminRoute = ({ children }) => {
+  const { user } = useContext(AuthContext);
+  if (user?.role === 'SALES') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -63,10 +71,10 @@ const AppRoutes = () => {
         <Route path="followups" element={<FollowUpsPage />} />
         <Route path="communications" element={<CommunicationsPage />} />
         <Route path="reports" element={<ReportsPage />} />
-        <Route path="approvals" element={<PendingApprovalsPage />} />
-        <Route path="users" element={<UsersPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="audit-logs" element={<AuditLogsPage />} />
+        <Route path="approvals" element={<AdminRoute><PendingApprovalsPage /></AdminRoute>} />
+        <Route path="users" element={<AdminRoute><UsersPage /></AdminRoute>} />
+        <Route path="settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
+        <Route path="audit-logs" element={<AdminRoute><AuditLogsPage /></AdminRoute>} />
       </Route>
 
       {/* Fallback */}

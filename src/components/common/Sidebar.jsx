@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { AuthContext } from '../../store/authContext';
+import api from '../../services/api';
 import {
   LayoutDashboard,
   Users,
@@ -13,25 +15,53 @@ import {
   Settings,
   ShieldAlert,
   ShieldCheck,
-  X
+  X,
+  UserCheck
 } from 'lucide-react';
 
 const navItems = [
-  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { label: 'Leads CRM', path: '/leads', icon: Users },
-  { label: 'Import Leads', path: '/import-leads', icon: FileSpreadsheet },
-  { label: 'Messages', path: '/messages', icon: MessageSquareText },
-  { label: 'Templates', path: '/templates', icon: FileCode },
-  { label: 'Follow-ups', path: '/followups', icon: CalendarCheck },
-  { label: 'Communications', path: '/communications', icon: History },
-  { label: 'Edit Approvals', path: '/approvals', icon: ShieldCheck },
-  { label: 'Reports', path: '/reports', icon: BarChart3 },
-  { label: 'Users', path: '/users', icon: UserCog },
-  { label: 'Settings', path: '/settings', icon: Settings },
-  { label: 'Audit Logs', path: '/audit-logs', icon: ShieldAlert }
+  { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Leads CRM', path: '/leads', icon: Users, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Import Leads', path: '/import-leads', icon: FileSpreadsheet, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Messages', path: '/messages', icon: MessageSquareText, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Templates', path: '/templates', icon: FileCode, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Follow-ups', path: '/followups', icon: CalendarCheck, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Communications', path: '/communications', icon: History, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Edit Approvals', path: '/approvals', icon: ShieldCheck, roles: ['ADMIN', 'MANAGER'], hasBadge: true },
+  { label: 'Reports', path: '/reports', icon: BarChart3, roles: ['ADMIN', 'MANAGER', 'SALES'] },
+  { label: 'Users', path: '/users', icon: UserCog, roles: ['ADMIN'] },
+  { label: 'Settings', path: '/settings', icon: Settings, roles: ['ADMIN'] },
+  { label: 'Audit Logs', path: '/audit-logs', icon: ShieldAlert, roles: ['ADMIN'] }
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {
+  const { user } = useContext(AuthContext);
+  const userRole = user?.role || 'SALES';
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
+
+  useEffect(() => {
+    if (['ADMIN', 'MANAGER'].includes(userRole)) {
+      const fetchCount = async () => {
+        try {
+          const res = await api.get('/approvals/count');
+          if (res.data.success) {
+            setPendingApprovalsCount(res.data.count || 0);
+          }
+        } catch (err) {
+          // ignore
+        }
+      };
+
+      fetchCount();
+      const interval = setInterval(fetchCount, 15000); // refresh count every 15s
+      return () => clearInterval(interval);
+    }
+  }, [userRole]);
+
+  const filteredNavItems = navItems.filter((item) =>
+    !item.roles || item.roles.includes(userRole)
+  );
+
   return (
     <>
       {/* Mobile Backdrop */}
@@ -67,7 +97,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         {/* Navigation List */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
@@ -83,17 +113,31 @@ const Sidebar = ({ isOpen, onClose }) => {
                 }
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.hasBadge && pendingApprovalsCount > 0 && (
+                  <span className="bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full text-[10px] animate-pulse">
+                    {pendingApprovalsCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}
         </nav>
 
-        {/* Footer Info */}
-        <div className="p-4 border-t border-slate-800 text-[11px] text-slate-500">
-          <p className="font-semibold text-slate-400">Kevalon Technology</p>
-          <p className="text-[10px] mt-0.5">Harsh Kothari • CEO & Founder</p>
-          <p className="text-[10px] text-slate-600 mt-1">v1.0.0 Enterprise Build</p>
+        {/* User Info Footer */}
+        <div className="p-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-1 bg-slate-950/40">
+          <div className="flex items-center justify-between">
+            <p className="font-bold text-slate-200 truncate">{user?.name || 'Kevalon User'}</p>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-wide ${
+              userRole === 'ADMIN'
+                ? 'bg-purple-950 text-purple-300 border border-purple-800'
+                : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+            }`}>
+              {userRole}
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 truncate">{user?.email || 'sales@kevalontechnology.in'}</p>
+          <p className="text-[9px] text-slate-600 pt-1 border-t border-slate-800/60">Kevalon Technology CRM v1.0</p>
         </div>
       </aside>
     </>
