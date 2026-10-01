@@ -12,6 +12,7 @@ import {
   UserCog,
   Settings,
   ShieldAlert,
+  ShieldCheck,
   X
 } from 'lucide-react';
 
@@ -23,6 +24,7 @@ const navItems = [
   { label: 'Templates', path: '/templates', icon: FileCode },
   { label: 'Follow-ups', path: '/followups', icon: CalendarCheck },
   { label: 'Communications', path: '/communications', icon: History },
+  { label: 'Edit Approvals', path: '/approvals', icon: ShieldCheck },
   { label: 'Reports', path: '/reports', icon: BarChart3 },
   { label: 'Users', path: '/users', icon: UserCog },
   { label: 'Settings', path: '/settings', icon: Settings },

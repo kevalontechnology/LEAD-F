@@ -17,6 +17,7 @@ import ReportsPage from '../pages/ReportsPage';
 import UsersPage from '../pages/UsersPage';
 import SettingsPage from '../pages/SettingsPage';
 import AuditLogsPage from '../pages/AuditLogsPage';
+import PendingApprovalsPage from '../pages/PendingApprovalsPage';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -62,6 +63,7 @@ const AppRoutes = () => {
         <Route path="followups" element={<FollowUpsPage />} />
         <Route path="communications" element={<CommunicationsPage />} />
         <Route path="reports" element={<ReportsPage />} />
+        <Route path="approvals" element={<PendingApprovalsPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
