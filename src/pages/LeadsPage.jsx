@@ -11,6 +11,9 @@ import { Search, MessageSquare, Mail, Send, Trash2, Upload, Filter, RotateCcw, X
 
 const quickFilterTabs = [
   { id: 'ALL', label: 'All Leads' },
+  { id: 'HAS_EMAIL', label: '📧 Email Available' },
+  { id: 'HAS_MOBILE', label: '📱 Mobile Available' },
+  { id: 'HAS_BOTH', label: '⚡ Both Available' },
   { id: 'NOT_CONTACTED', label: 'Not Contacted' },
   { id: 'MESSAGE_READY', label: 'Message Ready' },
   { id: 'WHATSAPP_SENT', label: 'WhatsApp Sent' },
@@ -59,8 +62,16 @@ const LeadsPage = () => {
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [sendChannel, setSendChannel] = useState('WHATSAPP');
+  const [bulkFilter, setBulkFilter] = useState(null);
   const [pendingEmailContent, setPendingEmailContent] = useState(null);
   const [sending, setSending] = useState(false);
+
+  const handleInitiateBulkFilterSend = (channelType, filterType) => {
+    setActiveLead(null);
+    setSendChannel(channelType);
+    setBulkFilter(filterType);
+    setIsConfirmOpen(true);
+  };
 
   const fetchLeads = async () => {
     try {
@@ -158,8 +169,6 @@ const LeadsPage = () => {
 
   // Bulk Action Confirmation Execution
   const handleConfirmSend = async () => {
-    if (selectedLeadIds.length === 0) return;
-
     try {
       setSending(true);
 
@@ -172,7 +181,7 @@ const LeadsPage = () => {
         const emailResult = res.result;
 
         if (emailResult?.success) {
-          alert(`Email sent to ${emailResult.leadTitle}`);
+          alert(`Email sent to ${emailResult.leadTitle} as Sales Executive!`);
         } else {
           alert(emailResult?.error || 'Email sending failed');
         }
@@ -180,17 +189,25 @@ const LeadsPage = () => {
         setIsConfirmOpen(false);
         setSelectedLeadIds([]);
         setPendingEmailContent(null);
+        setBulkFilter(null);
         fetchLeads();
         return;
       }
 
-      const res = await bulkSendMessagesApi(selectedLeadIds, sendChannel);
+      const res = await bulkSendMessagesApi(
+        selectedLeadIds,
+        sendChannel,
+        selectedLeadIds.length === 0 ? (bulkFilter || (sendChannel === 'EMAIL' ? 'HAS_EMAIL' : 'HAS_MOBILE')) : undefined,
+        selectedCategory
+      );
+
       if (res.success) {
         alert(
-          `Outreach Complete!\nSuccess: ${res.sentCount} leads\nFailed: ${res.failedCount}\nSkipped (DO_NOT_CONTACT): ${res.skippedDoNotContactCount}`
+          `Sales Executive Outreach Complete!\nChannel: ${sendChannel}\nSuccess: ${res.sentCount} leads\nFailed: ${res.failedCount}\nSkipped (DO_NOT_CONTACT): ${res.skippedDoNotContactCount}`
         );
         setIsConfirmOpen(false);
         setSelectedLeadIds([]);
+        setBulkFilter(null);
         fetchLeads();
       }
     } catch (err) {
@@ -225,10 +242,28 @@ const LeadsPage = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => handleInitiateBulkFilterSend('EMAIL', 'HAS_EMAIL')}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+            title="Bulk Send Brevo Emails to All Leads with Email Available as Sales Executive"
+          >
+            <Mail className="w-4 h-4" />
+            Send Bulk Email (Sales)
+          </button>
+
+          <button
+            onClick={() => handleInitiateBulkFilterSend('WHATSAPP', 'HAS_MOBILE')}
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+            title="Bulk Send WhatsApp to All Leads with Mobile Available as Sales Executive"
+          >
+            <MessageSquare className="w-4 h-4" />
+            Send Bulk WhatsApp (Sales)
+          </button>
+
           <button
             onClick={() => navigate('/import-leads')}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
           >
             <Upload className="w-4 h-4" />
             Import Excel
