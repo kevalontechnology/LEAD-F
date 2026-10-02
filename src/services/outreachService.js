@@ -10,7 +10,7 @@ export const sendEmailApi = async (leadId, customSubject, customBody) => {
   return res.data;
 };
 
-export const bulkSendMessagesApi = async (leadIds, channel, filter, category) => {
-  const res = await api.post('/leads/messages/bulk-send', { leadIds, channel, filter, category });
+export const bulkSendMessagesApi = async (leadIds, channel, filter, category, sendAllDatabase = false) => {
+  const res = await api.post('/leads/messages/bulk-send', { leadIds, channel, filter, category, sendAllDatabase });
   return res.data;
 };

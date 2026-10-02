@@ -194,11 +194,14 @@ const LeadsPage = () => {
         return;
       }
 
+      const isAllDb = selectedLeadIds.length === 0 || bulkFilter !== null;
+
       const res = await bulkSendMessagesApi(
         selectedLeadIds,
         sendChannel,
         selectedLeadIds.length === 0 ? (bulkFilter || (sendChannel === 'EMAIL' ? 'HAS_EMAIL' : 'HAS_MOBILE')) : undefined,
-        selectedCategory
+        selectedCategory,
+        isAllDb
       );
 
       if (res.success) {
@@ -491,14 +494,21 @@ const LeadsPage = () => {
       {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={isConfirmOpen}
-        title="Confirm Manual Outreach"
-        description={`You are about to initiate outreach to ${selectedLeadIds.length} selected lead(s). Messages will NOT be sent to any unselected or DO_NOT_CONTACT leads.`}
+        title="Confirm Outreach Action"
+        description={
+          (selectedLeadIds.length === 0 || bulkFilter !== null)
+            ? `You are about to initiate bulk ${sendChannel} outreach to ALL ${total} matching lead(s) in the database across ALL pages.`
+            : `You are about to initiate outreach to ${selectedLeadIds.length} selected lead(s). Messages will NOT be sent to any unselected or DO_NOT_CONTACT leads.`
+        }
         selectedCount={selectedLeadIds.length}
+        totalDatabaseCount={total}
+        isAllDatabase={selectedLeadIds.length === 0 || bulkFilter !== null}
         channel={sendChannel}
         onConfirm={handleConfirmSend}
         onClose={() => {
           setIsConfirmOpen(false);
           setPendingEmailContent(null);
+          setBulkFilter(null);
         }}
         loading={sending}
       />

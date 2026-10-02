@@ -6,6 +6,8 @@ const ConfirmationModal = ({
   title = 'Confirm Outreach Action',
   description,
   selectedCount = 0,
+  totalDatabaseCount = 0,
+  isAllDatabase = false,
   whatsappCount = 0,
   emailCount = 0,
   channel = 'WHATSAPP',
@@ -38,7 +40,9 @@ const ConfirmationModal = ({
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-sm text-slate-600 leading-relaxed">
-            {description || 'Are you sure you want to proceed with sending outreach messages?'}
+            {description || (isAllDatabase
+              ? `Are you sure you want to proceed with bulk outreach to ALL ${totalDatabaseCount || 'matching'} lead(s) in the database across ALL pages?`
+              : 'Are you sure you want to proceed with sending outreach messages?')}
           </p>
 
           {/* Sender Persona Selection */}
@@ -92,21 +96,29 @@ const ConfirmationModal = ({
 
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
             <div className="flex justify-between items-center text-xs text-slate-600">
-              <span className="font-semibold text-slate-800">Total Selected Leads:</span>
-              <span className="font-bold text-slate-900 text-sm">{selectedCount}</span>
+              <span className="font-semibold text-slate-800">
+                {isAllDatabase ? 'Total Database Leads (All Pages):' : 'Total Selected Leads:'}
+              </span>
+              <span className="font-bold text-brand-700 text-sm">
+                {isAllDatabase ? totalDatabaseCount : selectedCount}
+              </span>
             </div>
 
             {(channel === 'WHATSAPP' || channel === 'BOTH') && (
               <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-200/60 pt-1.5">
-                <span>WhatsApp Dispatch:</span>
-                <span className="font-semibold text-emerald-600">{whatsappCount || selectedCount}</span>
+                <span>WhatsApp Dispatch Scope:</span>
+                <span className="font-semibold text-emerald-600">
+                  {isAllDatabase ? `All Database Leads (${totalDatabaseCount})` : (whatsappCount || selectedCount)}
+                </span>
               </div>
             )}
 
             {(channel === 'EMAIL' || channel === 'BOTH') && (
               <div className="flex justify-between items-center text-xs text-slate-600 border-t border-slate-200/60 pt-1.5">
-                <span>Email Dispatch:</span>
-                <span className="font-semibold text-blue-600">{emailCount || selectedCount}</span>
+                <span>Email Dispatch Scope:</span>
+                <span className="font-semibold text-blue-600">
+                  {isAllDatabase ? `All Database Leads (${totalDatabaseCount})` : (emailCount || selectedCount)}
+                </span>
               </div>
             )}
           </div>
@@ -114,7 +126,9 @@ const ConfirmationModal = ({
           <div className="flex items-start gap-2 text-[11px] text-amber-800 bg-amber-50 border border-amber-200 p-3 rounded-xl">
             <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
             <span>
-              Messages will be sent <strong>ONLY</strong> to the selected leads. Any leads marked as <strong>DO NOT CONTACT</strong> will be automatically blocked.
+              {isAllDatabase
+                ? `Bulk outreach will be sent to ALL matching leads in the database across ALL pages. Any leads marked as DO NOT CONTACT will be automatically skipped.`
+                : `Messages will be sent ONLY to the selected leads. Any leads marked as DO NOT CONTACT will be automatically blocked.`}
             </span>
           </div>
         </div>
