@@ -108,7 +108,7 @@ const ImportLeadsPage = () => {
   const [columnMapping, setColumnMapping] = useState({});
   const [detectedHeaders, setDetectedHeaders] = useState([]);
   const [duplicateAction, setDuplicateAction] = useState('SKIP');
-  const [senderPersona, setSenderPersona] = useState('CEO'); // 'CEO' or 'SALES'
+  const [senderPersona, setSenderPersona] = useState('SALES'); // 'SALES' or 'CEO'
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
 

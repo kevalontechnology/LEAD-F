@@ -13,7 +13,7 @@ const ConfirmationModal = ({
   onClose,
   loading = false
 }) => {
-  const [senderPersona, setSenderPersona] = useState('CEO'); // 'CEO' or 'SALES'
+  const [senderPersona, setSenderPersona] = useState('SALES'); // 'SALES' or 'CEO'
 
   if (!isOpen) return null;
 
